@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+	<title>Oasis Chat</title>
+
+	<style>
+		body {
+			background: #fcfcfc;
+		}
+	</style>
+</head>
+<body>
+
+	<div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm">
+		<h5 class="my-0 mr-md-auto">CodeOasis Chat</h5>
+		<nav class="my-2 my-md-0 mr-md-3">
+			<a class="p-2 text-dark" href="#">Main</a>
+			<a class="p-2 text-dark" href="#">About</a>
+			<a class="p-2 text-dark" href="#">Support</a>
+		</nav>
+
+		<a class="btn btn-outline-primary" href="#">Sign up</a>
+	</div>
+
+	<div class="container">
+		<div class="py-5 text-center">
+			<h2>Nice Chat</h2>
+			<p class="lead">Enter your name for chat start</p>
+		</div>
+		<div class="row">
+			<div class="col-6">
+				<!-- form (name+message) -->
+				<h3>Chat Form</h3>
+				<form id="messForm">
+					<label for="name">Nickname</label>
+					<input type="text" name="name" id="name" placeholder="your name" class="form-control">
+					<br>
+					<label for="message">Message</label>
+					<textarea name="message" id="message" class="form-control" placeholder="your message"></textarea>
+					<br>
+					<input type="submit" value="send" class="btn btn-danger">
+				</form>
+			</div>
+
+			<div class="col-6">
+				<h3>Messages</h3>
+				<!-- all messages shown here -->
+				<div id="all_mess"></div>
+			</div>
+
+		</div>
+	</div>
+
+	<!-- jQuery + Socket.io -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+
+	<script>
+		// for each user - different color (6 styles)
+		var min = 1;
+		var max = 6;
+		var random = Math.floor(Math.random() * (max - min)) + min;
+
+		// came from Bootstrap styles
+		var alertClass;
+		switch (random) {
+			case 1:
+				alertClass = 'secondary';
+				break;
+			case 2:
+				alertClass = 'danger';
+				break;
+			case 3:
+				alertClass = 'success';
+				break;
+			case 4:
+				alertClass = 'warning';
+				break;
+			case 5:
+				alertClass = 'info';
+				break;
+			case 6:
+				alertClass = 'light';
+				break;
+		}
+
+		$(function() {
+
+			var socket = io.connect();
+
+			var $form = $("#messForm"); // form
+			var $name = $("#name"); // name field
+			var $textarea = $("#message"); // text field
+			var $all_messages = $("#all_mess"); // message field
+
+			// event on button
+			$form.submit(function(event) {
+
+				event.preventDefault();
+				
+				socket.emit('send mess', {mess:$textarea.val(), name:$name.val(), className:alertClass});
+				// clearing message field
+				$textarea.val('');
+			});
+
+			// event 'add mess', comes after message is coming
+			socket.on('add mess', function(data) {
+				
+				$all_messages.append("<div class='alert alert-" + data.className + "'><b>" + data.name + "</b>: " + data.mess + "</div>");
+			});
+
+		});
+	</script>
+</body>
+</html>
